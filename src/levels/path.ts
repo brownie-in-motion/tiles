@@ -42,7 +42,7 @@ export class PathLevel extends Level<Symbol> {
         [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1],
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
       ]),
-      ruleSize: [2, 2],
+      ruleSize: [3, 3],
       root,
     })
   }
