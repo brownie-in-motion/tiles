@@ -2,6 +2,7 @@ import './style.css'
 import { BeginLevel } from './levels/begin'
 import { TriangleLevel } from './levels/triangle'
 import { SquareLevel } from './levels/square'
+import { PathLevel } from './levels/path'
 import { MazeLevel } from './levels/maze'
 import { DoubleLevel } from './levels/double'
 
@@ -13,6 +14,7 @@ const Level = number && [
   null,
   BeginLevel,
   TriangleLevel,
+  PathLevel,
   SquareLevel,
   MazeLevel,
   DoubleLevel,
