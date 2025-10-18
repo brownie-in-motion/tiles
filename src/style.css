@@ -1,0 +1,185 @@
+html,
+body,
+#app {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+.rules {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 1rem;
+
+  .rule {
+    background-color: lightgray;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    display: flex;
+    gap: 1rem;
+
+    &.selected {
+      background-color: darkseagreen;
+    }
+
+    .controls {
+      display: flex;
+      gap: 0.5rem;
+      flex-direction: column;
+
+      .up,
+      .down,
+      .delete {
+        width: 1rem;
+        border-radius: 1rem;
+        background: white;
+
+        &:hover {
+          background-color: whitesmoke;
+        }
+        &:active {
+          transform: scale(0.95);
+        }
+
+        display: grid;
+        place-items: center;
+        position: relative;
+
+        svg {
+          position: absolute;
+          transform-origin: 50% 50%;
+          color: gray;
+        }
+      }
+
+      .down svg { transform: scale(3) translateY(5%); }
+      .up svg { transform: scale(3) translateY(-5%); }
+      .delete svg { transform: scale(3); }
+
+      .delete {
+        flex-grow: 1;
+      }
+    }
+
+    .tile {
+      aspect-ratio: 1 / 1;
+      width: 2rem;
+      background-color: white;
+      cursor: pointer;
+      &:hover,
+      &.focused {
+        transform: scale(1.05);
+      }
+    }
+
+    .tile:has(img) {
+      background: none;
+    }
+
+    .left-grid,
+    .right-grid {
+      display: grid;
+      gap: 0.5rem;
+      grid-template-rows: max-content;
+    }
+
+    &:last-child .down,
+    &:first-child .up {
+      background-color: whitesmoke;
+      svg { visibility: hidden; }
+      pointer-events: none;
+    }
+  }
+}
+
+.tile {
+  aspect-ratio: 1 / 1;
+  border-radius: 12%;
+
+  img {
+    display: block;
+    user-select: none;
+  }
+
+  transition: all 0.1s ease-in-out;
+}
+
+.grid {
+  display: grid;
+  gap: 0;
+  background-color: lightgray;
+  padding: 1rem;
+  border-radius: 0.5rem;
+
+  .tile {
+    padding: 8%;
+    &:hover,
+    &.focused {
+      transform: scale(1.1);
+    }
+  }
+}
+
+.level {
+  display: grid;
+  height: 100%;
+  padding: 1rem;
+  box-sizing: border-box;
+
+  grid-template-areas:
+    "grid rules"
+    "below rules"
+  ;
+  grid-template-columns: 40rem min-content;
+  grid-template-rows: 1fr 1fr;
+  gap: 1rem;
+
+  .grid-wrapper {
+    grid-area: grid;
+  }
+
+  .below {
+    grid-area: below;
+    width: 100%;
+    display: flex;
+    align-items: start;
+    gap: 1rem;
+  }
+
+  .rules {
+    grid-area: rules;
+    overflow: auto;
+    padding-right: 0.5rem;
+
+    .rule:first-child .up,
+    .rule:nth-last-child(2) .down,
+    .rule:last-child .up,
+    .rule:last-child .delete,
+    .rule:last-child .down,
+    &.disabled .up,
+    &.disabled .delete,
+    &.disabled .down
+    {
+      background-color: whitesmoke;
+      svg { visibility: hidden; }
+      pointer-events: none;
+    }
+  }
+
+  button {
+    background: whitesmoke;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    cursor: pointer;
+    transition: all 0.1s ease-in-out;
+
+    &:hover {
+      background-color: lightgray;
+    }
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+}
