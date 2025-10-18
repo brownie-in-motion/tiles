@@ -55,8 +55,8 @@ export class DoubleLevel extends Level<DoubleSet> {
   }
 
   advance(symbol: DoubleSet | null): DoubleSet | null {
-    const n = ((symbol ?? -1) + 1) % 6
-    if (n === 5) return null
+    const n = ((symbol ?? -1) + 1) % 7
+    if (n === 6) return null
     return n as DoubleSet
   }
 }
