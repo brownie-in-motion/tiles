@@ -2,20 +2,24 @@ import { Level } from '../level'
 import { TileMap } from '../tile-map'
 import * as emoji from '../emoji'
 
-const createGrid = (width: number, numbers: string[]): DoubleSet[][] => {
+const createGrid = (
+  width: number,
+  numbers: string[],
+  fill: DoubleSet,
+): DoubleSet[][] => {
   const rows = []
   for (const number of numbers) {
-    rows.push(Array(width).fill(3))
+    rows.push(Array(width).fill(fill))
 
     const digits = number.toString()
     const right = []
     for (const digit of digits) {
       right.push(+digit)
     }
-    const left = Array(width - right.length - 1).fill(3)
-    rows.push([...left, ...right, 3])
+    const left = Array(width - right.length - 1).fill(fill)
+    rows.push([...left, ...right, fill])
   }
-  rows.push(Array(width).fill(3))
+  rows.push(Array(width).fill(fill))
   return rows
 }
 
@@ -35,10 +39,11 @@ export class DoubleLevel extends Level<DoubleSet> {
     ]
 
     super({
-      start: TileMap.fromArray<DoubleSet>(createGrid(width, numbers)),
+      start: TileMap.fromArray<DoubleSet>(createGrid(width, numbers, 3)),
       goal: TileMap.fromArray<DoubleSet>(createGrid(
         width,
         numbers.map((x) => (parseInt(x, 3) * 2).toString(3)),
+        5,
       )),
       ruleSize: [2, 2],
       root,
