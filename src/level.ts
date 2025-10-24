@@ -17,12 +17,19 @@ type LevelState<LevelSymbol> =
     label: 'finished'
     result: TileMap<LevelSymbol>
   }
+  | {
+    label: 'stuck'
+    nextBoard: TileMap<LevelSymbol>
+    activeRule: number
+  }
+
+type ReplaceResult<T> = { map: TileMap<T>, changes: number } | null
 
 const replace = <T>(
   from: TileMap<T | null>,
   to: TileMap<T | null>,
   grid: TileMap<T>,
-): TileMap<T> | null => {
+): ReplaceResult<T> => {
   const fromShape = from.shape()
   const gridShape = grid.shape()
 
@@ -71,13 +78,17 @@ const replace = <T>(
   const [matchX, matchY] = match
 
   // Now, perform the replacement in the grid
+  let changes = 0
   const copy = new TileMap(grid)
   for (const [[i, j], value] of to) {
     if (value !== null && copy.get(matchX + i, matchY + j) !== undefined) {
-      copy.set(matchX + i, matchY + j, value)
+      if (copy.get(matchX + i, matchY + j) !== value) {
+        copy.set(matchX + i, matchY + j, value)
+        changes += 1
+      }
     }
   }
-  return copy
+  return { map: copy, changes }
 }
 
 const inState = <S, T extends LevelState<S>['label']>(
@@ -181,11 +192,12 @@ export abstract class Level<LevelSymbol> {
     const current = state.label !== 'running' ? this.start : state.nextBoard
 
     // Search for rules that match and yield a new board
-    let result: [number, TileMap<LevelSymbol>] | null = null
+    let result: [number, number, TileMap<LevelSymbol>] | null = null
     for (const [index, rule] of [...this.ruleState].entries()) {
-      const nextBoard = replace(rule.from, rule.to, current)
-      if (nextBoard !== null) {
-        result = [index, nextBoard]
+      const replaced = replace(rule.from, rule.to, current)
+      if (replaced !== null) {
+        const { map: nextBoard, changes } = replaced
+        result = [index, changes, nextBoard]
         break
       }
     }
@@ -199,7 +211,7 @@ export abstract class Level<LevelSymbol> {
     }
 
     // Otherwise, update state with it
-    const [rule, nextBoard] = result
+    const [rule, changes, nextBoard] = result
     if (state.label !== 'running') {
       return {
         label: 'running',
@@ -210,12 +222,20 @@ export abstract class Level<LevelSymbol> {
       }
     }
 
-    return {
-      label: 'running',
-      nextBoard: nextBoard,
-      activeRule: rule,
-      iteration: state.iteration + 1,
-      startTime: state.startTime,
+    if (changes > 0) {
+      return {
+        label: 'running',
+        nextBoard: nextBoard,
+        activeRule: rule,
+        iteration: state.iteration + 1,
+        startTime: state.startTime,
+      }
+    } else {
+      return {
+        label: 'stuck',
+        nextBoard: nextBoard,
+        activeRule: rule,
+      }
     }
   }
 
@@ -242,6 +262,7 @@ export abstract class Level<LevelSymbol> {
     let showButton
     let cancelButton
     let selectedRule
+    let warning = false
 
     if (state.label === 'default') {
       if (this.state?.label !== 'default') {
@@ -290,6 +311,24 @@ export abstract class Level<LevelSymbol> {
       } else {
         this.rerenderGrid(state.result)
       }
+    } else if (state.label === 'stuck') {
+      selectedRule = state.activeRule
+      warning = true
+
+      if (this.state?.label !== 'stuck') {
+        this.below.innerHTML = `
+          <button class="show">Show target grid</button>
+          <button class="cancel">Cancel</button>
+        `
+        showButton = this.below.querySelector('.show')
+        cancelButton = this.below.querySelector('.cancel')
+      }
+
+      if (this.showGoal) {
+        this.rerenderGrid(this.goal)
+      } else {
+        this.rerenderGrid(state.nextBoard)
+      }
     }
 
     showButton?.addEventListener('mousedown', () => {
@@ -319,7 +358,7 @@ export abstract class Level<LevelSymbol> {
       rightGrid: new TileMap([[[1, 1], null], [this.ruleSize, null]]),
     })
 
-    this.rules.rerender(display, false, selectedRule)
+    this.rules.rerender(display, false, selectedRule, warning)
     this.state = state
   }
 
@@ -375,7 +414,12 @@ export abstract class Level<LevelSymbol> {
     }
 
     if (this.state) {
-      this.actions.cancelExecution(null)
+      if (
+        this.state.label !== 'finished'
+        && this.state.label !== 'default'
+      ) {
+        this.actions.cancelExecution(null)
+      }
       this.rerender(this.state)
     }
   }

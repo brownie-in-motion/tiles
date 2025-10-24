@@ -99,6 +99,7 @@ export class Rules {
     list: PermutationList<RuleEntry>,
     disabled: boolean,
     selected?: number,
+    warning?: boolean,
   ) {
     console.log('INFO: rules were rerendered')
 
@@ -127,8 +128,12 @@ export class Rules {
     for (let i = 0; i < es.length; i++) {
       if (i === selected) {
         es[i].classList.add('selected')
+        if (warning) {
+          es[i].classList.add('warning')
+        }
       } else {
         es[i].classList.remove('selected')
+        es[i].classList.remove('warning')
       }
     }
 
